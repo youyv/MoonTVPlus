@@ -69,6 +69,7 @@ export interface VideoCardProps {
     episodes?: string[];
     episodes_titles?: string[];
   };
+  onBeforeNavigate?: () => void;
 }
 
 export type VideoCardHandle = {
@@ -107,6 +108,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
     playTime,
     totalTime,
     cmsData,
+    onBeforeNavigate,
   }: VideoCardProps,
   ref
 ) {
@@ -326,6 +328,8 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
       return;
     }
 
+    onBeforeNavigate?.();
+
     if (origin === 'live' && actualSource && actualId) {
       // 直播内容跳转到直播页面
       const url = `/live?source=${actualSource.replace('live_', '')}&id=${actualId.replace('live_', '')}`;
@@ -376,6 +380,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
     isAggregate,
     actualQuery,
     actualSearchType,
+    onBeforeNavigate,
   ]);
 
   // 新标签页播放处理函数
@@ -384,6 +389,8 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
     if (isUpcoming) {
       return;
     }
+
+    onBeforeNavigate?.();
 
     if (origin === 'live' && actualSource && actualId) {
       // 直播内容跳转到直播页面
@@ -411,6 +418,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
     isAggregate,
     actualQuery,
     actualSearchType,
+    onBeforeNavigate,
   ]);
 
   // 检查搜索结果的收藏状态
