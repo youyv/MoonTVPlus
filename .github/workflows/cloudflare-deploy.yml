@@ -184,5 +184,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
-          packageManager: pnpm
-          wranglerVersion: "4.60.0"
+
+
