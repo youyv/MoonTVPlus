@@ -19,3 +19,6 @@ database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
 [vars]
 NODE_ENV = "production"
 BUILD_TARGET = "cloudflare"
+
+# 自定义：禁止自动开启 workers.dev 域名
+workers_dev = false
