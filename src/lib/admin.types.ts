@@ -8,6 +8,8 @@ export interface AdminConfig {
   SiteConfig: {
     SiteName: string;
     Announcement: string;
+    // 公告显示模式：once=单次显示（每个用户每条公告仅显示一次，换公告则重新显示）；every=每次显示（每次打开首页都显示）
+    AnnouncementDisplayMode?: 'once' | 'every';
     SearchDownstreamMaxPage: number;
     SiteInterfaceCacheTime: number;
     DoubanProxyType: string;
@@ -26,7 +28,11 @@ export interface AdminConfig {
     TMDBProxy?: string;
     TMDBReverseProxy?: string;
     // 动漫/Bangumi配置
-    BangumiDataSource?: 'direct' | 'server-proxy' | 'custom-baseurl';
+    BangumiDataSource?:
+      | 'direct'
+      | 'server-proxy'
+      | 'custom-baseurl'
+      | 'sakura';
     BangumiApiBaseUrl?: string;
     BangumiImageBaseUrl?: string;
     BangumiProxy?: string;
@@ -71,6 +77,12 @@ export interface AdminConfig {
     OIDCClientSecret?: string; // OIDC Client Secret
     OIDCButtonText?: string; // OIDC登录按钮文字
     OIDCMinTrustLevel?: number; // 最低信任等级（仅LinuxDo网站有效，为0时不判断）
+    // 流量统计配置
+    AnalyticsEnabled?: boolean; // 是否启用流量统计
+    AnalyticsProvider?: 'umami' | 'google' | 'clarity' | 'custom'; // 统计服务提供商
+    AnalyticsScriptUrl?: string; // 脚本URL（Umami: umami.js地址; GA: gtag URL; 自定义: 脚本src）
+    AnalyticsWebsiteId?: string; // 网站ID（Umami: website_id; GA: Measurement ID如G-XXXX; 自定义: 留空）
+    AnalyticsCustomScript?: string; // 自定义统计代码（仅custom模式使用，完整的HTML脚本内容）
   };
   UserConfig: {
     Users: {
@@ -87,6 +99,7 @@ export interface AdminConfig {
     }[];
   };
   SpecialSourceApis?: string[]; // 特殊源 key 列表，默认对普通入口隐藏
+  ClientAdSourceApis?: string[]; // 客户端去广告源 key 列表：MoonTVPlus APP / OrionTV 请求 source-detail 时 m3u8 套 proxy-m3u8
   SourceConfig: {
     key: string;
     name: string;
@@ -157,6 +170,16 @@ export interface AdminConfig {
     ScanInterval?: number; // 定时扫描间隔（分钟），0表示关闭，最低60分钟
     ScanMode?: 'torrent' | 'name' | 'hybrid'; // 扫描模式：torrent=种子库匹配，name=名字匹配，hybrid=混合模式（默认）
     DisableVideoPreview?: boolean; // 禁用预览视频，直接返回直连链接
+    /**
+     * 路径元信息（最长前缀匹配 folder 路径）
+     * key: 规范化路径前缀，如 /videos 可匹配 /videos/某影片
+     */
+    PathMeta?: {
+      [path: string]: {
+        category: string; // 分类名
+        refresh14m: boolean; // 该路径播放时是否启用 14 分钟 URL 续期
+      };
+    };
   };
   NetDiskConfig?: {
     Quark?: {
@@ -342,6 +365,19 @@ export interface AdminConfig {
       from: string; // 发件人邮箱
     };
   };
+  TelegramConfig?: {
+    enabled: boolean; // 是否启用 Telegram Bot
+    botToken?: string; // Bot Token，仅服务端使用
+    botUsername?: string; // Bot 用户名，用于前端跳转
+    webhookSecret?: string; // Webhook Secret Token
+    apiProxy?: string; // Telegram Bot API 系统代理（HTTP/HTTPS proxy）
+    apiBaseUrl?: string; // Telegram Bot API 反代 Base URL
+    loginEnabled?: boolean; // 是否启用 Telegram 登录
+    bindingEnabled?: boolean; // 是否启用用户绑定
+    registrationEnabled?: boolean; // 是否启用 Telegram 注册
+    notificationsEnabled?: boolean; // 是否启用 Telegram 通知
+    defaultNotifications?: boolean; // 新绑定用户默认开启通知
+  };
   MusicConfig?: {
     Enabled?: boolean; // 启用音乐功能
     BaseUrl?: string; // lxserver 地址
@@ -361,6 +397,7 @@ export interface AdminConfig {
       id: string;
       title: string;
       filterText: string;
+      excludeText?: string; // 排除关键词，逗号分隔；标题包含任一则跳过
       source: 'acgrip' | 'mikan' | 'dmhy' | 'nyaa';
       enabled: boolean;
       lastCheckTime: number;

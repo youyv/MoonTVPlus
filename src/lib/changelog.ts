@@ -11,6 +11,44 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "224.0.0",
+    date: "2026-07-21",
+    added: [
+    "新增Turso(libSQL)数据库支持",
+    "新增流量分析功能",
+    "动漫订阅增加排除关键词",
+    "增加客户端去广告配置",
+    "openlist增加路径元信息配置分类和自动刷新链接功能",
+    "增加动漫数据源桜色镜像站"
+    ],
+    changed: [
+    "tgbot站点名改为自定义站点名",
+    "webtv局域网遥控二维码可聚焦",
+    "设备识别移除tgbot",
+    "IOS PWA沉浸式状态栏支持",
+    "优化动漫数据源图片降级策略"
+    ],
+    fixed: [
+      // 无修复内容
+    ]
+  },
+  {
+    version: "223.3.0",
+    date: "2026-07-06",
+    added: [
+    "接入Telegram Bot功能",
+    "增加本地播放/离线播放状态标识",
+    "公告增加每次显示模式",
+    "增加光鸭云盘名称映射"
+    ],
+    changed: [
+      // 无变更内容
+    ],
+    fixed: [
+      // 无修复内容
+    ]
+  },
+  {
     version: "223.2.0",
     date: "2026-06-25",
     added: [
