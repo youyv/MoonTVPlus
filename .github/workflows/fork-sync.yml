@@ -24,7 +24,7 @@ jobs:
           upstream_sync_branch: main
           target_sync_branch: main
           test_mode: false
-          git_pull_args: '--rebase'
+          upstream_pull_args: '--rebase'
 
       - name: Check for new commits
         if: success()
