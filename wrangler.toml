@@ -4,7 +4,7 @@ compatibility_flags = ["nodejs_compat"]
 main = ".open-next/worker.js"
 minify = true
 
-workers_dev = true
+workers_dev = false
 
 # Workers Observability
 [observability]
