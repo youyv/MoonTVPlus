@@ -6,6 +6,10 @@ minify = true
 
 workers_dev = false
 
+# 定时触发器（UTC）：每 6 小时触发订阅链接自动更新
+[triggers]
+crons = ["0 */6 * * *"]
+
 # Workers Observability
 [observability]
 enabled = true
