@@ -154,10 +154,34 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { password: string } }
 ) {
-  console.log(request.url);
-
   const cronPassword = process.env.CRON_PASSWORD || 'mtvpls';
-  if (params.password !== cronPassword) {
+
+  // 认证：优先从 Authorization header 读取，其次 X-Cron-Password，
+  // 最后才是 URL 路径密码（向后兼容）
+  const authHeader = request.headers.get('authorization') || '';
+  const xCronPassword = request.headers.get('x-cron-password') || '';
+  let providedPassword = '';
+
+  if (authHeader.startsWith('Bearer ')) {
+    providedPassword = authHeader.slice(7).trim();
+  } else if (authHeader.startsWith('Basic ')) {
+    // Basic auth：解码 base64(user:pass)，取密码部分（用户名可任意）
+    try {
+      const decoded = Buffer.from(authHeader.slice(6).trim(), 'base64').toString('utf-8');
+      const sepIndex = decoded.indexOf(':');
+      providedPassword = sepIndex >= 0 ? decoded.slice(sepIndex + 1) : decoded;
+    } catch {
+      providedPassword = '';
+    }
+  } else if (authHeader) {
+    providedPassword = authHeader.trim();
+  } else if (xCronPassword) {
+    providedPassword = xCronPassword.trim();
+  } else {
+    providedPassword = params.password;
+  }
+
+  if (providedPassword !== cronPassword) {
     return NextResponse.json(
       { success: false, message: 'Unauthorized' },
       { status: 401 }
