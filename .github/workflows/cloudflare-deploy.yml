@@ -120,6 +120,7 @@ jobs:
           append_var "DANMAKU_API_TOKEN" "${{ secrets.DANMAKU_API_TOKEN }}"
           append_var "ANNOUNCEMENT" "${{ secrets.ANNOUNCEMENT }}"
           append_var "CRON_PASSWORD" "${{ secrets.CRON_PASSWORD }}"
+          append_var "CRON_WAIT_FOR_COMPLETION" "${{ secrets.CRON_WAIT_FOR_COMPLETION }}"
           append_var "SITE_BASE" "${{ secrets.SITE_BASE }}"
           append_var "REDIS_URL" "${{ secrets.REDIS_URL }}"
           append_var "KVROCKS_URL" "${{ secrets.KVROCKS_URL }}"
