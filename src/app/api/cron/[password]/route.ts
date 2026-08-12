@@ -227,8 +227,15 @@ export async function GET(
         timestamp: new Date().toISOString(),
       });
     } else {
-      // 立即返回 202，定时任务在后台执行
-      cronJob();
+      // 订阅配置刷新是轻量且关键的任务，在请求内完成（保证订阅链接自动更新）
+      // 其余重任务（播放记录/直播/OpenList/追番）后台执行，避免占用 Cloudflare 免费版 CPU 配额
+      await refreshConfig();
+      Promise.all([
+        refreshAllLiveChannels(),
+        refreshOpenList(),
+        refreshRecordAndFavorites(),
+        checkAnimeSubscriptions(),
+      ]).catch((err) => console.error('后台任务执行失败:', err));
       return NextResponse.json({
         success: true,
         message: 'Cron job accepted and running in background',
