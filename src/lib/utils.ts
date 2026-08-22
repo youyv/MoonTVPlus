@@ -298,10 +298,15 @@ export function clearBangumiImageProbeCache(): void {
   };
 }
 
-export function clearBangumiImageFallbackCache(): void {
+/** 仅清除 localStorage 中的 sticky 降级标记，不动内存探测缓存（热路径调用） */
+function clearBangumiImageFallbackFlags(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(BANGUMI_IMAGE_FALLBACK_UNTIL_KEY);
   localStorage.removeItem(BANGUMI_IMAGE_FALLBACK_SIGNATURE_KEY);
+}
+
+export function clearBangumiImageFallbackCache(): void {
+  clearBangumiImageFallbackFlags();
   clearBangumiImageProbeCache();
 }
 
@@ -449,13 +454,13 @@ function isBangumiImageFallbackActive(): boolean {
 
   const until = Number(localStorage.getItem(BANGUMI_IMAGE_FALLBACK_UNTIL_KEY));
   if (!until || Date.now() >= until) {
-    clearBangumiImageFallbackCache();
+    clearBangumiImageFallbackFlags();
     return false;
   }
 
   const signature = localStorage.getItem(BANGUMI_IMAGE_FALLBACK_SIGNATURE_KEY);
   if (signature !== getBangumiImageFallbackSignature()) {
-    clearBangumiImageFallbackCache();
+    clearBangumiImageFallbackFlags();
     return false;
   }
 

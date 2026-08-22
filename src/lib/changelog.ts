@@ -11,6 +11,19 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "225.0.1",
+    date: "2026-08-21",
+    added: [
+      // 无新增内容
+    ],
+    changed: [
+    "每日放送复用新番放送缓存"
+    ],
+    fixed: [
+    "修复动漫图片源探测重复多次请求"
+    ]
+  },
+  {
     version: "225.0.0",
     date: "2026-08-20",
     added: [
@@ -24,10 +37,10 @@ export const changelog: ChangelogEntry[] = [
     ],
     changed: [
     "搜索前高级显示显示方式，无权限时不显示只搜私人影库",
-    "修复私人影库的parse-torrent-name错误匹配名字",
     "默认弹幕上限设置为5000"
     ],
     fixed: [
+    "修复私人影库的parse-torrent-name错误匹配名字",
     "修复videocard标题popup层级比来源数量角标低",
     "修复网盘源PC右键无法显示原名",
     "修复首页综艺查看更多跳转错误"

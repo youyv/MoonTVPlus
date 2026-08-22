@@ -227,8 +227,46 @@ async function requestWithFallback<T>(path: string): Promise<T> {
   }
 }
 
+// 日历缓存：复用首页「新番放送」的 localStorage 缓存（homepage_bangumi），
+// 首页 / tv 动漫更新时间表 / 豆瓣每日放送 共用同一份数据，避免重复请求 Bangumi。
+const BANGUMI_CALENDAR_CACHE_KEY = 'homepage_bangumi';
+const BANGUMI_CALENDAR_CACHE_TTL = 60 * 60 * 1000; // 1 小时，与首页保持一致
+
+function readBangumiCalendarCache(): BangumiCalendarData[] | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(BANGUMI_CALENDAR_CACHE_KEY);
+    if (!raw) return null;
+    const { data, timestamp } = JSON.parse(raw);
+    if (!Array.isArray(data) || data.length === 0) return null;
+    if (Date.now() - timestamp > BANGUMI_CALENDAR_CACHE_TTL) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function writeBangumiCalendarCache(data: BangumiCalendarData[]): void {
+  if (typeof window === 'undefined') return;
+  if (!Array.isArray(data) || data.length === 0) return;
+  try {
+    localStorage.setItem(
+      BANGUMI_CALENDAR_CACHE_KEY,
+      JSON.stringify({ data, timestamp: Date.now() })
+    );
+  } catch {
+    // localStorage 不可用时忽略
+  }
+}
+
+/** 获取 BGM 日历（首页新番放送 / tv 每日放送 / 豆瓣每日放送共用），带 1 小时 localStorage 缓存 */
 export async function GetBangumiCalendarData(): Promise<BangumiCalendarData[]> {
-  return requestWithFallback<BangumiCalendarData[]>('/calendar');
+  const cached = readBangumiCalendarCache();
+  if (cached) return cached;
+
+  const data = await requestWithFallback<BangumiCalendarData[]>('/calendar');
+  writeBangumiCalendarCache(data);
+  return data;
 }
 
 /**
