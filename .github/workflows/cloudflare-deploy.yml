@@ -1,18 +1,23 @@
 name: Deploy to Cloudflare
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
 permissions:
   contents: read
   deployments: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy to Cloudflare Pages
+
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -73,9 +78,12 @@ jobs:
       - name: Configure D1 Database in wrangler.toml
         run: |
           STORAGE_TYPE="${{ secrets.NEXT_PUBLIC_STORAGE_TYPE }}"
+
           if [ "$STORAGE_TYPE" != "d1" ]; then
             echo "Storage type is not d1 (current: $STORAGE_TYPE), removing D1 database configuration"
+            # Remove the entire [[d1_databases]] section including the comment
             sed -i '/^# D1 数据库绑定$/,/^database_id = .*$/d' wrangler.toml
+            # Also remove any remaining [[d1_databases]] block
             sed -i '/^\[\[d1_databases\]\]$/,/^$/{ /^\[\[d1_databases\]\]$/d; /^binding = /d; /^database_name = /d; /^database_id = /d; }' wrangler.toml
             echo "D1 configuration removed from wrangler.toml"
           elif [ -n "${{ secrets.D1_DATABASE_ID }}" ]; then
@@ -92,13 +100,22 @@ jobs:
           # 同时兼容仓库变量(vars.VARS)与仓库密钥(secrets.VARS)。
           VARS: ${{ vars.VARS || secrets.VARS }}
         run: |
+          # Function to append variable to wrangler.toml if it has a value
           append_var() {
             local var_name=$1
             local var_value=$2
+            # 已由 wrangler.toml 静态定义（如 [vars] 里的 NODE_ENV /
+            # CRON_WAIT_FOR_COMPLETION）的键直接跳过，否则写出重复键会导致 TOML 解析失败。
+            if grep -qE "^[[:space:]]*\"?${var_name}\"?[[:space:]]*=" wrangler.toml; then
+              echo "SKIP: $var_name already defined in wrangler.toml"
+              return 0
+            fi
             if [ -n "$var_value" ]; then
               echo "$var_name = \"$var_value\"" >> wrangler.toml
             fi
           }
+
+          # Append all environment variables to wrangler.toml
           append_var "NEXT_PUBLIC_STORAGE_TYPE" "${{ secrets.NEXT_PUBLIC_STORAGE_TYPE }}"
           append_var "NEXT_PUBLIC_SITE_NAME" "${{ secrets.NEXT_PUBLIC_SITE_NAME }}"
           append_var "NEXT_PUBLIC_SEARCH_MAX_PAGE" "${{ secrets.NEXT_PUBLIC_SEARCH_MAX_PAGE }}"
@@ -124,7 +141,6 @@ jobs:
           append_var "DANMAKU_API_TOKEN" "${{ secrets.DANMAKU_API_TOKEN }}"
           append_var "ANNOUNCEMENT" "${{ secrets.ANNOUNCEMENT }}"
           append_var "CRON_PASSWORD" "${{ secrets.CRON_PASSWORD }}"
-          append_var "CRON_WAIT_FOR_COMPLETION" "${{ secrets.CRON_WAIT_FOR_COMPLETION }}"
           append_var "SITE_BASE" "${{ secrets.SITE_BASE }}"
           append_var "REDIS_URL" "${{ secrets.REDIS_URL }}"
           append_var "KVROCKS_URL" "${{ secrets.KVROCKS_URL }}"
@@ -182,21 +198,26 @@ jobs:
       - name: Run D1 Database Migrations
         run: |
           STORAGE_TYPE="${{ secrets.NEXT_PUBLIC_STORAGE_TYPE }}"
+
           if [ "$STORAGE_TYPE" != "d1" ]; then
             echo "Storage type is not d1 (current: $STORAGE_TYPE), skipping D1 migrations"
             exit 0
           fi
+
           if [ -z "${{ secrets.D1_DATABASE_ID }}" ]; then
             echo "D1_DATABASE_ID not set, skipping migrations"
             exit 0
           fi
+
           echo "Running D1 database migrations..."
+
           for migration_file in ./migrations/*.sql; do
             if [ -f "$migration_file" ]; then
               echo "Executing migration: $(basename $migration_file)"
               wrangler d1 execute moontvplus --remote --file="$migration_file" || echo "⚠️ Migration may have been skipped (already applied)"
             fi
           done
+
           echo "✅ Migrations completed"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -207,5 +228,3 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: wrangler deploy
-
-
